@@ -11,9 +11,12 @@ end
 
 class PoloniexChecker
   def self.get_balance
-    JSON.parse(Poloniex.balances.body)
+    JSON.parse(Poloniex.complete_balances.body)
   end
 
+  def self.filter_to_zero_balance(balances)
+    balances.map{|d| OpenStruct.new(d.first.to_s =>  d.last['available'].to_f + d.last['onOrders'].to_f).to_h if d.last['btcValue'].to_f > 0}.compact.inject(&:merge)
+  end
   def self.get_available_lending_balance(currency = 'BTC')
     JSON.parse(Poloniex.available_account_balances.body).dig("lending").dig(currency.upcase)
   end
@@ -72,7 +75,7 @@ class PoloniexChecker
       table_name: 'exchange_data',
       item: {
       id: SecureRandom.uuid,
-      data: PoloniexChecker.get_balance,
+      data: self.filter_to_zero_balance(PoloniexChecker.get_balance),
       datetime:  DateTime.now.to_time.utc.strftime("%Y%m%d_%H%M"),
       exchange: 'poloniex'
       },
@@ -84,7 +87,7 @@ class PoloniexChecker
     datastore = Google::Cloud::Datastore.new project: 'exchange-analyzer'
     datastore.transaction do |tx|
       exchange_data = datastore.entity "exchange_data" do |t|
-        prop = Google::Cloud::Datastore::Properties.new(self.get_balance)
+        prop = Google::Cloud::Datastore::Properties.new(self.filter_to_zero_balance(self.get_balance))
         t['data'] = Google::Cloud::Datastore::Entity.from_grpc Google::Datastore::V1::Entity.new( properties: prop.to_grpc)
         t['datetime']=  DateTime.now.to_time.utc
         t['exchange']= 'poloniex'
