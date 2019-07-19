@@ -42,13 +42,23 @@ class PoloniexChecker
     puts "#{currency}'s available lending balance : #{available_balance}"
     divided_value = (available_balance.to_f / divide).floor(8)
     puts "#{currency}'s order lending balance : #{divided_value}"
-
-    if divided_value < 0.01
+    unless check_divide_value(divided_value, currency)
       puts "Not enough #{currency}'s order lending balance : #{divided_value}"
     else
       # Poloniex.make_loan_offer("BTC", 0.01, 2, 0, PoloniexChecker.get_best_lending_offer)
       order_result = Poloniex.make_loan_offer(currency.upcase, divided_value, 2, 0, PoloniexChecker.get_best_lending_offer(currency.upcase).to_f)
       order_result.body
+    end
+  end
+
+  def self.check_divide_value(divided_value, currency='BTC')
+    case currency.upcase
+    when 'BTC'
+      return divided_value > 0.01
+    when 'ETH'
+      return divided_value > 0.1
+    else
+      return false
     end
   end
 
@@ -88,5 +98,4 @@ class PoloniexChecker
     puts self.save_balance_to_dynamo
     puts self.save_balance_to_datastore
   end
-
 end
