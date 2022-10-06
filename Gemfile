@@ -15,7 +15,7 @@ gem 'dotenv-rails', '>= 2.7.6'
 gem 'aws-sdk-dynamodb'
 
 # For connect Google Datastore
-gem 'google-cloud-datastore', '>= 1.5.5'
+gem 'google-cloud-datastore', '>= 2.2.3'
 
 # Poloniex
 gem 'poloniex', github: 'ggomagundan/poloniex'
