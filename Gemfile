@@ -9,7 +9,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # For Env variable
 gem 'dotenv'
-gem 'dotenv-rails', '>= 2.7.6'
+gem 'dotenv-rails', '>= 2.8.0'
 
 # For connect Dynamo DB
 gem 'aws-sdk-dynamodb'
